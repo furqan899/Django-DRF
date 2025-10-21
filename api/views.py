@@ -3,7 +3,7 @@ from api.models import Product, Order
 from api.serializers import ProductInfoSerializer, ProductSerializer, OrderSerializer
 from rest_framework.decorators import api_view
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.views import APIView
 
 # @api_view(['GET'])
@@ -12,10 +12,14 @@ from rest_framework.views import APIView
 #     serializer = ProductSerializer(products, many=True)
 #     return Response(serializer.data)
 
-class ProductListAPIView(generics.ListAPIView):
-    queryset = Product.objects.filter(stock__gt=0)
+class ProductListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAdminUser()]
+        return [AllowAny()]
 # @api_view(['GET'])
 # def product_detail(request, pk):
 #     try:
