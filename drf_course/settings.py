@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'api',
     "rest_framework",
     "silk",
+    "django_filters",
 ]
 
 MIDDLEWARE = [
@@ -123,7 +124,9 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         # JWT Authentication
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
