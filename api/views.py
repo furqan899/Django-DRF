@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from api.filters import ProductFilter, InStockFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
+from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 
 # @api_view(['GET'])
 # def product_list(request):
@@ -28,6 +29,12 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
     ]
     search_fields = ["=name", "description"]
     ordering_fields = ["price", "name"]
+    pagination_class = LimitOffsetPagination
+
+    # pagination_class.page_size = 2
+    # pagination_class.page_query_param = "page_number"
+    # pagination_class.page_size_query_param = "size"
+    # pagination_class.max_page_size  = 5
 
     def get_permissions(self):
         if self.request.method == "POST":
