@@ -1,15 +1,14 @@
-from rest_framework.response import Response
-from api.models import Product, Order
-from api.serializers import ProductInfoSerializer, ProductSerializer, OrderSerializer
-from rest_framework.decorators import api_view
-from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
-from rest_framework.views import APIView
-from api.filters import ProductFilter, InStockFilter
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
-from rest_framework import viewsets
-from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
+from rest_framework import filters, generics, viewsets
+from rest_framework.decorators import api_view
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.decorators import action
+from api.filters import InStockFilter, OrderFilter, ProductFilter
+from api.models import Order, Product
+from api.serializers import OrderSerializer, ProductInfoSerializer, ProductSerializer
 
 # @api_view(['GET'])
 # def product_list(request):
@@ -113,11 +112,28 @@ class ProductDetailInfoAPIView(APIView):
         )
         return Response(serializer.data)
 
+
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.prefetch_related("items__product").all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
+    filterset_class = OrderFilter
+    filter_backends = [DjangoFilterBackend]
 
     def get_queryset(self):
-        return self.queryset.filter(user=self.request.user)
+        qs = super().get_queryset()
+        if not self.request.user.is_staff:
+            return qs.filter(user=self.request.user)
+        return qs
 
+
+    @action(
+        detail=False,
+        methods=["GET"],
+        url_path="user-orders",
+        permission_classes=[IsAuthenticated],
+    )
+    def user_orders(self, request):
+        orders = self.get_queryset().filter(user=request.user)
+        serializer = self.get_serializer(orders, many=True)
+        return Response(serializer.data)
