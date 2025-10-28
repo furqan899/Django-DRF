@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from api.filters import ProductFilter, InStockFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
+from rest_framework import viewsets
 from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 
 # @api_view(['GET'])
@@ -71,18 +72,18 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 #     return Response(serializer.data)
 
 
-class OrderListAPIView(generics.ListAPIView):
-    queryset = Order.objects.prefetch_related("items__product").all()
-    serializer_class = OrderSerializer
+# class OrderListAPIView(generics.ListAPIView):
+#     queryset = Order.objects.prefetch_related("items__product").all()
+#     serializer_class = OrderSerializer
 
 
-class UserOrderListAPIView(generics.ListAPIView):
-    queryset = Order.objects.prefetch_related("items__product").all()
-    serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]  # Add appropriate permissions
+# class UserOrderListAPIView(generics.ListAPIView):
+#     queryset = Order.objects.prefetch_related("items__product").all()
+#     serializer_class = OrderSerializer
+#     permission_classes = [IsAuthenticated]  # Add appropriate permissions
 
-    def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
+#     def get_queryset(self):
+#         return Order.objects.filter(user=self.request.user)
 
 
 # @api_view(['GET'])
@@ -111,3 +112,12 @@ class ProductDetailInfoAPIView(APIView):
             }
         )
         return Response(serializer.data)
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.prefetch_related("items__product").all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
